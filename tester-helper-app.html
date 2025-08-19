@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA MultiTool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #22262e;
+            --bg-card: #2a2f38;
+            --bg-hover: #323842;
+            --accent-primary: #4a9eff;
+            --accent-secondary: #3b82f6;
+            --text-primary: #e4e6eb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: #374151;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        .light-mode {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-card: #ffffff;
+            --bg-hover: #f3f4f6;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #2563eb;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            color: var(--accent-primary);
+            font-size: 24px;
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .btn.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-clear {
+            margin-top: auto;
+            border-color: var(--border-color);
+        }
+
+        .btn-clear:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--bg-card);
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .section-title {
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            padding: 12px 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            text-align: right;
+            user-select: none;
+            border-right: 1px solid var(--border-color);
+            min-width: 50px;
+            line-height: 1.5;
+            overflow-y: hidden;
+            white-space: pre-line;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            resize: none;
+            background: transparent;
+            color: var(--text-primary);
+            line-height: 1.5;
+            outline: none;
+            overflow: auto;
+            white-space: pre;
+        }
+
+        .output-container {
+            flex: 1;
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .output {
+            flex: 1;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+            overflow: auto;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .output pre {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            white-space: pre;
+            overflow: visible;
+        }
+
+        .output code {
+            white-space: pre;
+            display: block;
+        }
+
+        .controls {
+            background: var(--bg-card);
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .control-input,
+        .control-select {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .checkbox-group label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 14px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .status-bar {
+            background: var(--bg-card);
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .compare-mode {
+            display: none;
+        }
+
+        .compare-mode.active {
+            display: flex;
+        }
+
+        .diff-added {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .diff-removed {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">⚙️</span>
+                <span>QA MultiTool</span>
+            </div>
+            
+            <button class="btn" id="btn-json">📋 Beautify JSON</button>
+            <button class="btn" id="btn-xml">🏷️ Beautify XML</button>
+            <button class="btn" id="btn-compare">🔍 Porovnat texty</button>
+            <button class="btn" id="btn-base64-decode">🔓 Dekódovat Base64</button>
+            <button class="btn" id="btn-base64-encode">🔒 Enkódovat Base64</button>
+            <button class="btn" id="btn-jwt">🎫 Dekódovat JWT</button>
+            <button class="btn" id="btn-json-schema">📝 JSON → Schema</button>
+            <button class="btn" id="btn-text-generator">🎲 Generátor textu</button>
+            <button class="btn" id="btn-uuid">🆔 Generátor UUID</button>
+            <button class="btn btn-clear" id="btn-clear">🗑️ Vyčistit vše</button>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1 id="page-title">QA MultiTool</h1>
+                <p id="page-description">Vyberte funkci z levého panelu</p>
+            </div>
+
+            <div class="workspace">
+                <div class="panel" id="standard-mode">
+                    <div class="section-title">Vstup</div>
+                    
+                    <div class="controls" id="text-generator-controls" style="display: none;">
+                        <div class="control-row">
+                            <div class="control-group">
+                                <span class="control-label">Délka:</span>
+                                <input type="number" class="control-input" id="text-length" value="10" min="1" max="10000">
+                            </div>
+                            <div class="control-group">
+                                <span class="control-label">Typ:</span>
+                                <select class="control-select" id="text-type">
+                                    <option value="mixed">Vše</option>
+                                    <option value="letters">Písmena</option>
+                                    <option value="numbers">Čísla</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-container">
+                        <div class="line-numbers" id="input-line-numbers">1</div>
+                        <textarea class="editor" id="input-text" placeholder="Vložte zde váš text..."></textarea>
+                    </div>
+                </div>
+
+                <div class="panel compare-mode" id="compare-mode" style="grid-column: 1;">
+                    <div class="section-title">První text</div>
+                    <div class="editor-container">
+                        <div class="line-numbers" id="compare1-line-numbers">1</div>
+                        <textarea class="editor" id="compare-text1" placeholder="Vložte první text..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="panel compare-mode" id="compare-mode-2" style="grid-column: 2;">
+                    <div class="section-title">Druhý text</div>
+                    <div class="editor-container">
+                        <div class="line-numbers" id="compare2-line-numbers">1</div>
+                        <textarea class="editor" id="compare-text2" placeholder="Vložte druhý text..."></textarea>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="section-title">Výsledek</div>
+                    <div class="output-container">
+                        <div class="line-numbers" id="output-line-numbers"></div>
+                        <div class="output" id="output"></div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" id="btn-copy">📋 Kopírovat</button>
+                        <button class="action-btn" id="btn-download">💾 Stáhnout</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div id="status-text">Připraven k práci</div>
+                <button class="theme-toggle" id="theme-toggle">🌙 Tmavý režim</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+    <script>
+        let currentMode = '';
+        let lastResult = '';
+        let isDarkTheme = true;
+
+        // Inicializace
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obsluha tlačítek
+            document.getElementById('btn-json').addEventListener('click', () => setMode('json'));
+            document.getElementById('btn-xml').addEventListener('click', () => setMode('xml'));
+            document.getElementById('btn-compare').addEventListener('click', () => setMode('compare'));
+            document.getElementById('btn-base64-decode').addEventListener('click', () => setMode('base64-decode'));
+            document.getElementById('btn-base64-encode').addEventListener('click', () => setMode('base64-encode'));
+            document.getElementById('btn-jwt').addEventListener('click', () => setMode('jwt'));
+            document.getElementById('btn-json-schema').addEventListener('click', () => setMode('json-schema'));
+            document.getElementById('btn-text-generator').addEventListener('click', () => setMode('text-generator'));
+            document.getElementById('btn-uuid').addEventListener('click', () => setMode('uuid'));
+            document.getElementById('btn-clear').addEventListener('click', clearAll);
+            document.getElementById('btn-copy').addEventListener('click', copyResult);
+            document.getElementById('btn-download').addEventListener('click', downloadResult);
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+            // Obsluha vstupních událostí s vkládáním
+            const inputText = document.getElementById('input-text');
+            const compare1 = document.getElementById('compare-text1');
+            const compare2 = document.getElementById('compare-text2');
+            
+            // Obsluha běžného vstupu
+            inputText.addEventListener('input', handleInput);
+            compare1.addEventListener('input', handleInput);
+            compare2.addEventListener('input', handleInput);
+            
+            // Obsluha vkládání pro zachování formátování
+            inputText.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const value = this.value;
+                this.value = value.substring(0, start) + text + value.substring(end);
+                this.selectionStart = this.selectionEnd = start + text.length;
+                handleInput();
+            });
+            
+            compare1.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const value = this.value;
+                this.value = value.substring(0, start) + text + value.substring(end);
+                this.selectionStart = this.selectionEnd = start + text.length;
+                handleInput();
+            });
+            
+            compare2.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const value = this.value;
+                this.value = value.substring(0, start) + text + value.substring(end);
+                this.selectionStart = this.selectionEnd = start + text.length;
+                handleInput();
+            });
+            
+            // Synchronizace rolování
+            inputText.addEventListener('scroll', function() {
+                document.getElementById('input-line-numbers').scrollTop = this.scrollTop;
+            });
+            
+            compare1.addEventListener('scroll', function() {
+                document.getElementById('compare1-line-numbers').scrollTop = this.scrollTop;
+            });
+            
+            compare2.addEventListener('scroll', function() {
+                document.getElementById('compare2-line-numbers').scrollTop = this.scrollTop;
+            });
+            
+            document.getElementById('output').addEventListener('scroll', function() {
+                document.getElementById('output-line-numbers').scrollTop = this.scrollTop;
+            });
+            
+            updateLineNumbers('input-text', 'input-line-numbers');
+        });
+
+        function setMode(mode) {
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${mode}`).classList.add('active');
+            
+            currentMode = mode;
+            
+            // Přepnutí režimu porovnání
+            if (mode === 'compare') {
+                document.getElementById('standard-mode').style.display = 'none';
+                document.getElementById('compare-mode').classList.add('active');
+                document.getElementById('compare-mode-2').classList.add('active');
+            } else {
+                document.getElementById('standard-mode').style.display = 'flex';
+                document.getElementById('compare-mode').classList.remove('active');
+                document.getElementById('compare-mode-2').classList.remove('active');
+            }
+            
+            // Zobrazení/skrytí ovládacích prvků
+            document.getElementById('text-generator-controls').style.display = 
+                mode === 'text-generator' ? 'block' : 'none';
+            
+            // Nastavení placeholder a testovacích dat
+            const inputTextarea = document.getElementById('input-text');
+            
+            if (mode === 'uuid') {
+                inputTextarea.placeholder = 'Zadejte počet UUID (1-100) nebo nechte prázdné pro 1 UUID';
+            } else if (mode === 'text-generator') {
+                inputTextarea.placeholder = 'Text bude vygenerován automaticky podle nastavení výše';
+            } else if (mode === 'xml') {
+                inputTextarea.placeholder = 'Vložte XML data pro formátování...';
+            } else if (mode === 'json') {
+                inputTextarea.placeholder = 'Vložte JSON data pro formátování...';
+            } else {
+                inputTextarea.placeholder = 'Vložte zde váš text...';
+            }
+            
+            updateHeader(mode);
+            
+            // Zpracování pouze pokud je obsah nebo je to generátor
+            if (mode === 'uuid' || mode === 'text-generator') {
+                setTimeout(() => processInput(), 100);
+            } else if (inputTextarea && inputTextarea.value && inputTextarea.value.trim()) {
+                setTimeout(() => processInput(), 100);
+            } else {
+                // Vymazání výstupu
+                document.getElementById('output').textContent = '';
+                document.getElementById('output-line-numbers').textContent = '';
+            }
+        }
+
+        function updateHeader(mode) {
+            const titles = {
+                'json': 'JSON Beautifier',
+                'xml': 'XML Beautifier',
+                'compare': 'Porovnání textů',
+                'base64-decode': 'Base64 Dekodér',
+                'base64-encode': 'Base64 Enkodér',
+                'jwt': 'JWT Dekodér',
+                'json-schema': 'JSON Schema Generátor',
+                'text-generator': 'Generátor textu',
+                'uuid': 'UUID Generátor'
+            };
+            
+            const descriptions = {
+                'json': 'Formátování JSON dat',
+                'xml': 'Formátování XML dat',
+                'compare': 'Porovnání dvou textů',
+                'base64-decode': 'Dekódování Base64 dat',
+                'base64-encode': 'Enkódování do Base64',
+                'jwt': 'Dekódování JWT tokenů',
+                'json-schema': 'Generování JSON Schema',
+                'text-generator': 'Generování náhodného textu',
+                'uuid': 'Generování UUID identifikátorů'
+            };
+            
+            document.getElementById('page-title').textContent = titles[mode] || 'QA MultiTool';
+            document.getElementById('page-description').textContent = descriptions[mode] || 'Vyberte funkci z levého panelu';
+        }
+
+        function handleInput() {
+            try {
+                const inputTextarea = document.getElementById('input-text');
+                const compare1 = document.getElementById('compare-text1');
+                const compare2 = document.getElementById('compare-text2');
+                
+                // Aktualizace čísel řádků pro aktivní textarea
+                if (inputTextarea && inputTextarea.value !== undefined) {
+                    updateLineNumbers('input-text', 'input-line-numbers');
+                }
+                if (compare1 && compare1.value !== undefined) {
+                    updateLineNumbers('compare-text1', 'compare1-line-numbers');
+                }
+                if (compare2 && compare2.value !== undefined) {
+                    updateLineNumbers('compare-text2', 'compare2-line-numbers');
+                }
+                
+                // Standardní zpracování pro všechny režimy
+                if (currentMode) {
+                    // Pro generátory vždy zpracovat
+                    if (currentMode === 'uuid' || currentMode === 'text-generator') {
+                        processInput();
+                    } 
+                    // Pro ostatní režimy zkontrolovat vstup
+                    else if (currentMode === 'compare') {
+                        if ((compare1 && compare1.value) || (compare2 && compare2.value)) {
+                            processInput();
+                        }
+                    } 
+                    else if (inputTextarea && inputTextarea.value) {
+                        // Zkontrolovat, že hodnota není prázdná
+                        const val = inputTextarea.value;
+                        if (val && val.length > 0) {
+                            processInput();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error in handleInput:', error);
+                const output = document.getElementById('output');
+                if (output) {
+                    output.textContent = 'Chyba: ' + error.message;
+                }
+            }
+        }
+
+        function countLines(text) {
+            if (!text || typeof text !== 'string') return 1;
+            
+            let count = 1;
+            for (let i = 0; i < text.length; i++) {
+                if (text[i] === '\n') {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function updateLineNumbers(textareaId, lineNumbersId) {
+            try {
+                const textarea = document.getElementById(textareaId);
+                const lineNumbers = document.getElementById(lineNumbersId);
+                
+                if (!textarea || !lineNumbers) return;
+                
+                const lineCount = countLines(textarea.value || '');
+                
+                // Generování čísel řádků
+                let nums = [];
+                for (let i = 1; i <= lineCount; i++) {
+                    nums.push(i);
+                }
+                lineNumbers.textContent = nums.join('\n');
+                
+                // Synchronizace rolování
+                if (textarea.scrollTop !== undefined) {
+                    lineNumbers.scrollTop = textarea.scrollTop;
+                }
+            } catch (error) {
+                console.error('Error in updateLineNumbers:', error);
+            }
+        }
+
+        function processInput() {
+            if (!currentMode) return;
+            
+            const output = document.getElementById('output');
+            const outputLineNumbers = document.getElementById('output-line-numbers');
+            
+            if (!output || !outputLineNumbers) {
+                console.error('Output elements not found');
+                return;
+            }
+            
+            try {
+                let result = '';
+                
+                // Volání příslušné funkce podle režimu
+                switch (currentMode) {
+                    case 'json':
+                        result = beautifyJson();
+                        break;
+                    case 'xml':
+                        result = beautifyXml();
+                        break;
+                    case 'compare':
+                        result = compareTexts();
+                        break;
+                    case 'base64-decode':
+                        result = decodeBase64();
+                        break;
+                    case 'base64-encode':
+                        result = encodeBase64();
+                        break;
+                    case 'jwt':
+                        result = decodeJwt();
+                        break;
+                    case 'json-schema':
+                        result = generateJsonSchema();
+                        break;
+                    case 'text-generator':
+                        result = generateRandomText();
+                        break;
+                    case 'uuid':
+                        result = generateUuid();
+                        break;
+                    default:
+                        result = 'Neznámý režim';
+                }
+                
+                // Uložení jednoduchého výsledku
+                lastResult = result || '';
+                
+                // Zpracování prázdného výsledku
+                if (!result) {
+                    output.textContent = '';
+                    outputLineNumbers.textContent = '';
+                    return;
+                }
+                
+                // Pro JSON režim - aplikovat zvýraznění syntaxe s Prism
+                if (currentMode === 'json' && result && !result.startsWith('Zadejte') && !result.startsWith('Chyba')) {
+                    const pre = document.createElement('pre');
+                    pre.style.margin = '0';
+                    pre.style.padding = '0';
+                    pre.style.background = 'transparent';
+                    pre.style.overflow = 'visible';
+                    
+                    const code = document.createElement('code');
+                    code.className = 'language-json';
+                    code.textContent = result;
+                    code.style.whiteSpace = 'pre';
+                    
+                    pre.appendChild(code);
+                    output.innerHTML = '';
+                    output.appendChild(pre);
+                    
+                    // Aplikovat Prism pro JSON
+                    setTimeout(() => {
+                        if (typeof Prism !== 'undefined') {
+                            Prism.highlightElement(code);
+                        }
+                    }, 10);
+                }
+                // Pro XML režim - aplikovat zvýraznění syntaxe
+                else if (currentMode === 'xml' && result && !result.startsWith('Zadejte') && !result.startsWith('Chyba')) {
+                    const pre = document.createElement('pre');
+                    pre.style.margin = '0';
+                    pre.style.padding = '0';
+                    pre.style.background = 'transparent';
+                    pre.style.overflow = 'visible';
+                    
+                    const code = document.createElement('code');
+                    code.className = 'language-xml';
+                    code.textContent = result;
+                    code.style.whiteSpace = 'pre';
+                    
+                    pre.appendChild(code);
+                    output.innerHTML = '';
+                    output.appendChild(pre);
+                    
+                    // Aplikovat Prism pro XML
+                    setTimeout(() => {
+                        if (typeof Prism !== 'undefined') {
+                            Prism.highlightElement(code);
+                        }
+                    }, 10);
+                }
+                // Pro Base64 dekódování - detekce typu obsahu a aplikace zvýraznění
+                else if (currentMode === 'base64-decode' && result && !result.startsWith('Zadejte')) {
+                    // Zkontrolovat, zda je výsledek JSON nebo XML
+                    let isJson = false;
+                    let isXml = false;
+                    
+                    try {
+                        JSON.parse(result);
+                        isJson = true;
+                    } catch {
+                        if (result.trim().startsWith('<') && result.includes('>')) {
+                            isXml = true;
+                        }
+                    }
+                    
+                    if (isJson || isXml) {
+                        const pre = document.createElement('pre');
+                        pre.style.margin = '0';
+                        pre.style.padding = '0';
+                        pre.style.background = 'transparent';
+                        pre.style.overflow = 'visible';
+                        
+                        const code = document.createElement('code');
+                        code.className = isJson ? 'language-json' : 'language-xml';
+                        code.textContent = result;
+                        code.style.whiteSpace = 'pre';
+                        
+                        pre.appendChild(code);
+                        output.innerHTML = '';
+                        output.appendChild(pre);
+                        
+                        // Aplikovat zvýraznění Prism
+                        setTimeout(() => {
+                            if (typeof Prism !== 'undefined') {
+                                Prism.highlightElement(code);
+                            }
+                        }, 10);
+                    } else {
+                        output.textContent = result;
+                    }
+                }
+                // Pro JWT režim - formátování se sekcemi a aplikace zvýraznění
+                else if (currentMode === 'jwt' && result && !result.startsWith('Zadejte')) {
+                    output.innerHTML = '';
+                    
+                    // Parsování sekcí JWT výsledku
+                    const sections = result.split('\n\n');
+                    
+                    sections.forEach(section => {
+                        if (section.includes('=== JWT')) {
+                            // Sekce hlavičky
+                            const headerDiv = document.createElement('div');
+                            headerDiv.style.color = 'var(--text-secondary)';
+                            headerDiv.style.fontSize = '12px';
+                            headerDiv.style.marginTop = '12px';
+                            headerDiv.style.marginBottom = '8px';
+                            headerDiv.style.fontWeight = '600';
+                            headerDiv.textContent = section.split('\n')[0];
+                            output.appendChild(headerDiv);
+                            
+                            // JSON obsah
+                            const jsonContent = section.split('\n').slice(1).join('\n');
+                            if (jsonContent) {
+                                const pre = document.createElement('pre');
+                                pre.style.margin = '0';
+                                pre.style.padding = '0';
+                                pre.style.background = 'transparent';
+                                
+                                const code = document.createElement('code');
+                                code.className = 'language-json';
+                                code.textContent = jsonContent;
+                                
+                                pre.appendChild(code);
+                                output.appendChild(pre);
+                                
+                                setTimeout(() => {
+                                    if (typeof Prism !== 'undefined') {
+                                        Prism.highlightElement(code);
+                                    }
+                                }, 10);
+                            }
+                        } else if (section.includes('=== SIGNATURE')) {
+                            // Sekce podpisu
+                            const headerDiv = document.createElement('div');
+                            headerDiv.style.color = 'var(--text-secondary)';
+                            headerDiv.style.fontSize = '12px';
+                            headerDiv.style.marginTop = '12px';
+                            headerDiv.style.marginBottom = '8px';
+                            headerDiv.style.fontWeight = '600';
+                            headerDiv.textContent = '=== SIGNATURE ===';
+                            output.appendChild(headerDiv);
+                            
+                            const sigDiv = document.createElement('div');
+                            sigDiv.style.fontFamily = 'Consolas, Monaco, monospace';
+                            sigDiv.style.wordBreak = 'break-all';
+                            sigDiv.textContent = section.split('\n')[1];
+                            output.appendChild(sigDiv);
+                        } else if (section.includes('Token vyprší')) {
+                            // Informace o vypršení
+                            const expDiv = document.createElement('div');
+                            expDiv.style.marginTop = '12px';
+                            expDiv.style.color = section.includes('VYPRŠEL') ? 'var(--error)' : 'var(--text-secondary)';
+                            expDiv.textContent = section;
+                            output.appendChild(expDiv);
+                        }
+                    });
+                }
+                // Pro JSON Schema - aplikovat JSON zvýraznění
+                else if (currentMode === 'json-schema' && result && !result.startsWith('Zadejte')) {
+                    const pre = document.createElement('pre');
+                    pre.style.margin = '0';
+                    pre.style.padding = '0';
+                    pre.style.background = 'transparent';
+                    
+                    const code = document.createElement('code');
+                    code.className = 'language-json';
+                    code.textContent = result;
+                    
+                    pre.appendChild(code);
+                    output.innerHTML = '';
+                    output.appendChild(pre);
+                    
+                    setTimeout(() => {
+                        if (typeof Prism !== 'undefined') {
+                            Prism.highlightElement(code);
+                        }
+                    }, 10);
+                }
+                // Pro režim porovnání se zvýrazněním rozdílů
+                else if (currentMode === 'compare' && result && !result.includes('identické')) {
+                    output.innerHTML = '';
+                    const lines = result.split('\n');
+                    lines.forEach(line => {
+                        if (!line) return;
+                        const div = document.createElement('div');
+                        if (line.startsWith('Řádek')) {
+                            div.style.fontWeight = 'bold';
+                            div.style.marginTop = '8px';
+                            div.style.color = 'var(--text-primary)';
+                        } else if (line.startsWith('-')) {
+                            div.style.background = 'rgba(239, 68, 68, 0.1)';
+                            div.style.color = 'var(--error)';
+                            div.style.padding = '2px 4px';
+                            div.style.borderRadius = '3px';
+                            div.style.fontFamily = 'Consolas, Monaco, monospace';
+                        } else if (line.startsWith('+')) {
+                            div.style.background = 'rgba(16, 185, 129, 0.1)';
+                            div.style.color = 'var(--success)';
+                            div.style.padding = '2px 4px';
+                            div.style.borderRadius = '3px';
+                            div.style.fontFamily = 'Consolas, Monaco, monospace';
+                        }
+                        div.textContent = line;
+                        output.appendChild(div);
+                    });
+                }
+                // Prostý text pro ostatní režimy
+                else {
+                    output.textContent = result;
+                }
+                
+                // Aktualizace čísel řádků výstupu (pouze pro textové režimy)
+                if (['uuid', 'text-generator', 'base64-encode'].includes(currentMode) || 
+                    (result && (result.startsWith('Zadejte') || result.startsWith('Chyba')))) {
+                    const lineCount = countLines(result);
+                    let nums = [];
+                    for (let i = 1; i <= lineCount; i++) {
+                        nums.push(i);
+                    }
+                    outputLineNumbers.textContent = nums.join('\n');
+                } else {
+                    // Skrýt čísla řádků pro formátovaný výstup
+                    outputLineNumbers.textContent = '';
+                }
+                
+                // Aktualizace stavu
+                const statusElement = document.getElementById('status-text');
+                if (statusElement) {
+                    statusElement.textContent = 'Zpracováno';
+                }
+                
+            } catch (error) {
+                console.error('Error in processInput:', error);
+                output.textContent = 'Chyba: ' + error.message;
+                outputLineNumbers.textContent = '1';
+                const statusElement = document.getElementById('status-text');
+                if (statusElement) {
+                    statusElement.textContent = 'Chyba při zpracování';
+                }
+            }
+        }
+
+        function beautifyJson() {
+            const input = document.getElementById('input-text').value;
+            if (!input.trim()) return 'Zadejte JSON data...';
+            
+            try {
+                const parsed = JSON.parse(input);
+                return JSON.stringify(parsed, null, 2);
+            } catch (error) {
+                return `Chyba parsování JSON: ${error.message}\n\nOriginální vstup:\n${input}`;
+            }
+        }
+
+        function beautifyXml() {
+            const input = document.getElementById('input-text').value;
+            if (!input || !input.trim()) return 'Zadejte XML data...';
+            
+            try {
+                // Odebrání extra mezer mezi tagy a formátování
+                let formatted = input
+                    .replace(/>\s+</g, '><')  // Remove whitespace between tags
+                    .replace(/></g, '>\n<');   // Add newline between tags
+                
+                const lines = formatted.split('\n');
+                let indent = 0;
+                let result = [];
+                
+                for (let line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
+                    
+                    // Snížení odsazení pro uzavírací tagy
+                    if (trimmed.startsWith('</')) {
+                        indent = Math.max(0, indent - 1);
+                    }
+                    
+                    // Přidání řádku s příslušným odsazením
+                    result.push('  '.repeat(indent) + trimmed);
+                    
+                    // Zvýšení odsazení pro otevírací tagy
+                    if (trimmed.startsWith('<') && !trimmed.startsWith('</')) {
+                        // Nezvyšovat odsazení pro samouzavírací tagy nebo tagy s obsahem na stejném řádku
+                        if (!trimmed.endsWith('/>') && !trimmed.includes('</')) {
+                            // Zkontrolovat, zda to není deklarace jako <?xml
+                            if (!trimmed.startsWith('<?')) {
+                                indent++;
+                            }
+                        }
+                    }
+                }
+                
+                return result.join('\n');
+            } catch (error) {
+                return `Chyba formátování XML: ${error.message}`;
+            }
+        }
+
+        function compareTexts() {
+            const text1 = document.getElementById('compare-text1').value;
+            const text2 = document.getElementById('compare-text2').value;
+            
+            if (!text1 && !text2) return 'Zadejte texty pro porovnání...';
+            
+            const lines1 = text1.split('\n');
+            const lines2 = text2.split('\n');
+            const maxLines = Math.max(lines1.length, lines2.length);
+            
+            let result = [];
+            let differences = 0;
+            
+            for (let i = 0; i < maxLines; i++) {
+                const line1 = lines1[i] !== undefined ? lines1[i] : '';
+                const line2 = lines2[i] !== undefined ? lines2[i] : '';
+                
+                if (line1 !== line2) {
+                    differences++;
+                    result.push(`Řádek ${i + 1}:`);
+                    if (line1 !== undefined) {
+                        result.push(`- ${line1}`);
+                    }
+                    if (line2 !== undefined) {
+                        result.push(`+ ${line2}`);
+                    }
+                    result.push('');
+                }
+            }
+            
+            if (differences === 0) {
+                return 'Texty jsou identické!';
+            }
+            
+            return result.join('\n');
+        }
+
+        function decodeBase64() {
+            const input = document.getElementById('input-text').value.trim();
+            if (!input) return 'Zadejte Base64 data...';
+            
+            try {
+                // Řádná UTF-8 dekódování
+                const binary = atob(input.replace(/[\s\n\r]/g, ''));
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                const decoder = new TextDecoder('utf-8');
+                const decoded = decoder.decode(bytes);
+                
+                // Pokusit se o formátování, pokud je to JSON
+                try {
+                    const json = JSON.parse(decoded);
+                    return JSON.stringify(json, null, 2);
+                } catch (e) {
+                    // Pokud to není JSON, vrátit tak jak je
+                    return decoded;
+                }
+            } catch (error) {
+                return `Chyba dekódování Base64: ${error.message}`;
+            }
+        }
+
+        function encodeBase64() {
+            const input = document.getElementById('input-text').value;
+            if (!input) return 'Zadejte text...';
+            
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(input);
+                const binary = String.fromCharCode(...data);
+                return btoa(binary);
+            } catch (error) {
+                return `Chyba enkódování Base64: ${error.message}`;
+            }
+        }
+
+        function decodeJwt() {
+            try {
+                const textarea = document.getElementById('input-text');
+                if (!textarea) return 'Chyba: textarea nenalezena';
+                
+                const input = textarea.value;
+                if (!input) return 'Zadejte JWT token...';
+                
+                const trimmedInput = input.trim();
+                if (!trimmedInput) return 'Zadejte JWT token...';
+                
+                const parts = trimmedInput.split('.');
+                if (parts.length !== 3) throw new Error('Neplatný JWT');
+                
+                // Bezpečné dekódování částí
+                const header = JSON.parse(atob(parts[0]));
+                const payload = JSON.parse(atob(parts[1]));
+                
+                let result = '=== JWT HEADER ===\n';
+                result += JSON.stringify(header, null, 2);
+                result += '\n\n=== JWT PAYLOAD ===\n';
+                result += JSON.stringify(payload, null, 2);
+                result += '\n\n=== SIGNATURE ===\n';
+                result += parts[2];
+                
+                // Kontrola vypršení
+                if (payload.exp) {
+                    const expiryDate = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    const isExpired = now > expiryDate;
+                    result += `\n\nToken vyprší: ${expiryDate.toLocaleString('cs-CZ')}`;
+                    if (isExpired) {
+                        result += '\n⚠️ TOKEN VYPRŠEL!';
+                    }
+                }
+                
+                return result;
+            } catch (error) {
+                return 'Chyba JWT: ' + error.message;
+            }
+        }
+
+        function generateJsonSchema() {
+            const input = document.getElementById('input-text').value.trim();
+            if (!input) return 'Zadejte JSON data...';
+            
+            try {
+                const data = JSON.parse(input);
+                
+                function getSchemaForValue(value) {
+                    if (value === null) {
+                        return { type: "null" };
+                    }
+                    
+                    if (Array.isArray(value)) {
+                        const schema = { type: "array" };
+                        if (value.length > 0) {
+                            // Analyzovat všechny položky pro vytvoření union schématu pokud je potřeba
+                            const itemSchemas = value.map(item => getSchemaForValue(item));
+                            schema.items = itemSchemas[0]; // Použít první položku jako šablonu
+                        }
+                        return schema;
+                    }
+                    
+                    if (typeof value === 'object') {
+                        const schema = {
+                            type: "object",
+                            properties: {},
+                            required: []
+                        };
+                        
+                        for (const key in value) {
+                            schema.properties[key] = getSchemaForValue(value[key]);
+                            schema.required.push(key);
+                        }
+                        
+                        return schema;
+                    }
+                    
+                    if (typeof value === 'string') {
+                        const schema = { type: "string" };
+                        
+                        // Detekce formátů
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                            schema.format = "date";
+                        } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+                            schema.format = "date-time";
+                        } else if (/^[^@]+@[^@]+\.[^@]+$/.test(value)) {
+                            schema.format = "email";
+                        } else if (/^https?:\/\/.+/.test(value)) {
+                            schema.format = "uri";
+                        }
+                        
+                        return schema;
+                    }
+                    
+                    if (typeof value === 'number') {
+                        return { type: Number.isInteger(value) ? "integer" : "number" };
+                    }
+                    
+                    if (typeof value === 'boolean') {
+                        return { type: "boolean" };
+                    }
+                    
+                    return { type: "string" };
+                }
+                
+                const schema = {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    ...getSchemaForValue(data)
+                };
+                
+                return JSON.stringify(schema, null, 2);
+            } catch (error) {
+                return `Chyba: ${error.message}`;
+            }
+        }
+
+        function generateRandomText() {
+            const length = parseInt(document.getElementById('text-length').value) || 10;
+            const type = document.getElementById('text-type').value || 'mixed';
+            
+            if (length < 1 || length > 10000) {
+                return 'Délka musí být mezi 1 a 10000';
+            }
+            
+            let charset = '';
+            const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+            const numbers = '0123456789';
+            const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+            
+            switch (type) {
+                case 'letters':
+                    charset = uppercase + lowercase;
+                    break;
+                case 'numbers':
+                    charset = numbers;
+                    break;
+                case 'mixed':
+                default:
+                    charset = uppercase + lowercase + numbers + symbols;
+                    break;
+            }
+            
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            
+            return `Vygenerovaný text (${length} znaků):\n${result}`;
+        }
+
+        function generateUuid() {
+            const input = document.getElementById('input-text').value.trim();
+            let count = 1;
+            
+                            // Zkontrolovat, zda uživatel zadal číslo pro počet
+            if (input && !isNaN(parseInt(input))) {
+                count = Math.min(Math.max(parseInt(input), 1), 100);
+            }
+            
+            let uuids = [];
+            for (let i = 0; i < count; i++) {
+                const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    const r = Math.random() * 16 | 0;
+                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+                uuids.push(uuid);
+            }
+            
+            return `Vygenerováno UUID v4 (${count}):\n${uuids.join('\n')}`;
+        }
+
+        function clearAll() {
+            document.getElementById('input-text').value = '';
+            document.getElementById('compare-text1').value = '';
+            document.getElementById('compare-text2').value = '';
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('output-line-numbers').textContent = '';
+            currentMode = '';
+            lastResult = '';
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+            updateLineNumbers('input-text', 'input-line-numbers');
+            updateLineNumbers('compare-text1', 'compare1-line-numbers');
+            updateLineNumbers('compare-text2', 'compare2-line-numbers');
+            document.getElementById('page-title').textContent = 'QA MultiTool';
+            document.getElementById('page-description').textContent = 'Vyberte funkci z levého panelu';
+            document.getElementById('status-text').textContent = 'Vše vyčištěno';
+        }
+
+        function copyResult() {
+            if (lastResult) {
+                navigator.clipboard.writeText(lastResult);
+                document.getElementById('status-text').textContent = 'Zkopírováno!';
+            }
+        }
+
+        function downloadResult() {
+            if (lastResult) {
+                const blob = new Blob([lastResult], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'result.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            document.body.classList.toggle('light-mode');
+            document.getElementById('theme-toggle').textContent = isDarkTheme ? '🌙 Tmavý režim' : '☀️ Světlý režim';
+        }
+    </script>
+</body>
+</html>
