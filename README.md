@@ -2,7 +2,11 @@
 
 A comprehensive, browser-based development and testing toolkit designed for QA engineers, developers, and anyone working with data formats. Built with modern web technologies and featuring a sleek dark/light theme interface.
 
-![QA MultiTool Screenshot](screenshot.png)
+QA MultiTool Screenshots
+<img width="2542" height="1259" alt="image" src="https://github.com/user-attachments/assets/7542c42d-d076-41cf-9bb6-210b92195b5d" />
+<img width="2531" height="1252" alt="image" src="https://github.com/user-attachments/assets/5c2443c6-0792-43c0-ba6b-46372736ff04" />
+
+
 
 ## 🚀 Features
 
@@ -55,15 +59,13 @@ A comprehensive, browser-based development and testing toolkit designed for QA e
 ### Local Development
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/qa-multitool.git
+git clone https://github.com/Pilot404/TextMultiTool.git
 
 # Navigate to project directory
-cd qa-multitool
+cd tester-helper-app
 
 # Open in browser
-open qa-multitool.html
-# or
-python -m http.server 8000  # For local server
+open tester-helper-app.html
 ```
 
 ### Browser Compatibility
